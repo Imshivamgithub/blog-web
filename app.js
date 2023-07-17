@@ -22,8 +22,13 @@ app.use(express.static("public"));
 // To connect with local mongodb database
 // mongoose.connect("mongodb://0.0.0.0:27017/blogDB");
 // To connect with mongodb atlas
-  mongoose.connect(process.env.DB_CONN, { useNewUrlParser: "true"} );
-
+  try {
+    mongoose.connect( process.env.DB_CONN, {useNewUrlParser: true, useUnifiedTopology: true}, () =>
+    console.log("connected"));   
+     
+    }catch (error) { 
+    console.log("could not connect");    
+    }
 
 const postSchema = {
   title : String,
@@ -60,20 +65,11 @@ app.post("/compose", function(req, res){
     title: req.body.postTitle,
     content: req.body.postBody
   });
-// post.save(function(err){
-//   if (!err) {
-//     res.redirect("/");
-//   }
-// });
-  post.save()
-  .then(result=> {
-    res.redirect();
-  })
-  .catch(err=>{
-    console.log(err);
-  })
-
-
+post.save(function(err){
+  if (!err) {
+    res.redirect("/");
+  }
+});
 
 });
 
@@ -84,6 +80,7 @@ const requestpostId = req.params.postId ;
   Post.findOne({_id:requestpostId}, function(err, post){
     if (!err) {
       res.render("post", {
+        _id:post._id,
         title: post.title,
         content: post.content
       });
@@ -92,4 +89,24 @@ const requestpostId = req.params.postId ;
 
 });
 
+// To delete a post
+app.delete('/posts/:postId', (req, res)=>{
+  const id = req.params.postId;
+  Post.findByIdAndDelete(id)
+  .then(result => {
+    res.json({redirect:'/posts'})
+  })
+  .catch(err => {
+    console.log(err);
+  })
 
+})
+
+//Connecting to Server
+let port = process.env.PORT;
+if (port == null || port == "") {
+  port = 3000;
+}
+app.listen(port, function() {
+  console.log("Server has started successfully!");
+});
