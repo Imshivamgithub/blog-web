@@ -22,8 +22,12 @@ app.use(express.static("public"));
 // To connect with local mongodb database
 // mongoose.connect("mongodb://0.0.0.0:27017/blogDB");
 // To connect with mongodb atlas
-  mongoose.connect(process.env.DB_CONN, { useNewUrlParser: "true"} );
-
+  mongoose.connect(process.env.DB_CONN, { useNewUrlParser: "true"} )
+     .then(result =>  app.listen(3000, function() {
+      console.log("Server started on port 3000");
+    }))
+    .catch(err=> console.log(err));
+  
 
 const postSchema = {
   title : String,
@@ -60,11 +64,18 @@ app.post("/compose", function(req, res){
     title: req.body.postTitle,
     content: req.body.postBody
   });
-post.save(function(err){
-  if (!err) {
-    res.redirect("/");
-  }
-});
+// post.save(function(err){
+//   if (!err) {
+//     res.redirect("/");
+//   }
+// });
+  post.save()
+  .then(result=> {
+    res.redirect();
+  })
+  .catch(err=>{
+    console.log(err);
+  })
 
 
 
@@ -85,6 +96,4 @@ const requestpostId = req.params.postId ;
 
 });
 
-app.listen(3000, function() {
-  console.log("Server started on port 3000");
-});
+
